@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blog-api
+  template:
+    metadata:
+      labels:
+        app: blog-api
+    spec:
+      containers:
+        - name: blog-api
+          image: varadpoddar/blog-api:latest
+          ports:
+            - containerPort: 5001
+          env:
+            - name: BLOG_DB_PATH
+              value: /data/blog.db
+            - name: PORT
+              value: "5001"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: blog-api-pvc

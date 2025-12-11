@@ -9,6 +9,25 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: monolith
+            context: .
+            file: ./Dockerfile
+            image: varadpoddar/flask_blog
+          - name: blog-api
+            context: ./services/blog-api
+            file: ./services/blog-api/Dockerfile
+            image: varadpoddar/blog-api
+          - name: auth-service
+            context: ./services/auth
+            file: ./services/auth/Dockerfile
+            image: varadpoddar/auth-service
+          - name: frontend
+            context: ./services/frontend
+            file: ./services/frontend/Dockerfile
+            image: varadpoddar/frontend
 
     steps:
       - name: Checkout code
@@ -23,11 +42,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push flask_blog image
+      - name: Build and push ${{ matrix.name }} image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
           push: true
           tags: |
-            varadpoddar/flask_blog:latest
-            varadpoddar/flask_blog:${{ github.sha }}
+            ${{ matrix.image }}:latest
+            ${{ matrix.image }}:${{ github.sha }}
